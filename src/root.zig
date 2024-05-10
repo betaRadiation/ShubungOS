@@ -29,9 +29,10 @@ export fn _start() noreturn {
     );
 
     main.main() catch |e| {
-        Console.writeStringAtPos(Console.getColor(.white, .red), "KERNEL PANIC, FATAL:", 0, 0) catch unreachable;
-        Console.writeStringAtPos(Console.getColor(.white, .red), "ERROR: ", 1, 0) catch unreachable;
-        Console.writeStringAtPos(Console.getColor(.white, .red), @errorName(e), 1, 7) catch unreachable;
+        const panic_color = Console.getColor(.white, .red);
+        Console.writeStringAtPos(panic_color, "KERNEL PANIC, FATAL:", 0, 0) catch unreachable;
+        Console.writeStringAtPos(panic_color, "ERROR: ", 1, 0) catch unreachable;
+        Console.writeStringAtPos(panic_color, @errorName(e), 1, 7) catch unreachable;
     };
 
     while (true)

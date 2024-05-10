@@ -1,3 +1,5 @@
+const std = @import("std");
+
 pub const buffer: [*]volatile u16 = @ptrFromInt(0xB8000);
 pub const buffer_rows = 80;
 pub const buffer_columns = 25;
@@ -24,8 +26,6 @@ const Console_error = error{
     indexOutOfBounds,
 };
 
-const This = @This();
-
 pub const Color = u8;
 
 pub fn clearScreen() void {
@@ -51,3 +51,47 @@ pub fn writeStringAtPos(color: Color, str: []const u8, r: usize, c: usize) !void
         buffer[index + i] = @as(u16, color) << 8 | @as(u16, str[i]);
     }
 }
+
+pub usingnamespace struct {
+    row: usize,
+    column: usize,
+    color: Color,
+
+    const This = @This();
+
+    pub fn init(color: Color, r: usize, c: usize) This {
+        return .{ .row = r, .column = c, .color = color };
+    }
+
+    pub fn newLine(self: *This) void {
+        self.row += 1;
+    }
+
+    pub fn writeChar(self: *This, char: u8) !void {
+        try writeCharAtPos(self.color, char, self.row, self.column);
+        if (self.column + 1 > 80) {
+            self.newLine();
+        } else {
+            self.column += 1;
+        }
+    }
+
+    pub fn writeString(self: *This, str: []const u8) !void {
+        try writeStringAtPos(self.color, str, self.row, self.column);
+        if (self.column + str.len > 80) {
+            self.column = self.column + str.len - 80;
+            self.newLine();
+        } else {
+            self.column += str.len;
+        }
+    }
+
+    pub fn setColor(self: *This, color: Color) void {
+        self.color = color;
+    }
+
+    //pub fn print(self: *This, comptime fmt: []const u8, args: anytype) !void {
+    //    const str = std.fmt.comptimePrint(fmt, args);
+    //    try self.writeString(str);
+    //}
+};
